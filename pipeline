@@ -1,0 +1,32 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: test-drupal-deploy-pipeline-dev
+spec:
+  resources:
+  - name: app-git
+    type: git
+  - name: app-image
+    type: image
+  tasks:
+  - name: build
+    params:
+    - name: TLSVERIFY
+      value: "false"
+    resources:
+      inputs:
+      - name: source
+        resource: app-git
+      outputs:
+      - name: image
+        resource: app-image
+    taskRef:
+      name: s2i-php
+  - name: deploy-dev
+    params:
+    - name: ARGS
+      value: start-build drupal-8
+    runAfter:
+    - build
+    taskRef:
+      name: openshift-client
