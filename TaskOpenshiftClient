@@ -1,0 +1,24 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  creationTimestamp: "2019-09-17T18:17:11Z"
+  generation: 2
+  name: openshift-client
+  namespace: wordpress-deploy-v1
+  resourceVersion: "6382417"
+  selfLink: /apis/tekton.dev/v1alpha1/namespaces/wordpress-deploy-v1/tasks/openshift-client
+  uid: 5e1e08b1-d977-11e9-a639-06dcf3db7cb2
+spec:
+  inputs:
+    params:
+    - default: help
+      description: The OpenShift CLI arguments to run
+      name: ARGS
+  steps:
+  - args:
+    - ${inputs.params.ARGS}
+    command:
+    - /usr/local/bin/oc
+    image: quay.io/openshift-pipeline/openshift-cli:0.5.0
+    name: oc
+    resources: {}
