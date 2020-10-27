@@ -1,0 +1,101 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  creationTimestamp: "2019-09-17T12:34:05Z"
+  generation: 1
+  name: s2i-php
+  namespace: wordpress-deploy-v1
+  resourceVersion: "5963096"
+  selfLink: /apis/tekton.dev/v1alpha1/namespaces/wordpress-deploy-v1/tasks/s2i-php
+  uid: 70047dfa-d947-11e9-89be-0a96b00ba2a8
+spec:
+  inputs:
+    params:
+    - default: "2"
+      description: The minor version of the php
+      name: MINOR_VERSION
+    - default: .
+      description: The location of the path to run s2i from.
+      name: PATH_CONTEXT
+    - default: "true"
+      description: Verify the TLS on the registry endpoint (for push/pull to a non-TLS
+        registry)
+      name: TLSVERIFY
+    resources:
+    - name: source
+      outputImageDir: ""
+      targetPath: ""
+      type: git
+  outputs:
+    resources:
+    - name: image
+      outputImageDir: /builder/home/image-outputs/image
+      targetPath: ""
+      type: image
+  steps:
+  - command:
+    - s2i
+    - build
+    - ${inputs.params.PATH_CONTEXT}
+    - tgabriel/openshift-nginx-phpfpm-s2i:1.0
+    - --as-dockerfile
+    - /gen-source/Dockerfile.gen
+    image: quay.io/openshift-pipeline/s2i
+    name: generate
+    resources: {}
+    volumeMounts:
+    - mountPath: /gen-source
+      name: gen-source
+    workingDir: /workspace/source
+  - command:
+    - buildah
+    - bud
+    - --tls-verify=${inputs.params.TLSVERIFY}
+    - --layers
+    - -f
+    - /gen-source/Dockerfile.gen
+    - -t
+    - ${outputs.resources.image.url}
+    - .
+    image: quay.io/buildah/stable
+    name: build
+    resources: {}
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - mountPath: /var/lib/containers
+      name: varlibcontainers
+    - mountPath: /gen-source
+      name: gen-source
+    workingDir: /gen-source
+  - command:
+    - phpunit
+    - --bootstrap
+    - /workspace/source/src/autoload.php
+    - /workspace/source/tests/EmailTest.php
+    image: jakzal/phpqa
+    name: php-testing
+    resources: {}
+    volumeMounts:
+    - mountPath: /gen-source
+      name: gen-source
+    workingDir: /workspace/source
+  - command:
+    - buildah
+    - push
+    - --tls-verify=${inputs.params.TLSVERIFY}
+    - ${outputs.resources.image.url}
+    - docker://${outputs.resources.image.url}
+    image: quay.io/buildah/stable
+    name: push
+    resources: {}
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - mountPath: /var/lib/containers
+      name: varlibcontainers
+  volumes:
+  - emptyDir: {}
+    name: varlibcontainers
+  - emptyDir: {}
+    name: gen-source
