@@ -1,0 +1,9 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: tekton-git
+spec:
+  params:
+  - name: url
+    value: https://github.com/Tessg22/openshift-wordpress-source-code.git
+  type: git
