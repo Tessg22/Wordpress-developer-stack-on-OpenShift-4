@@ -339,7 +339,7 @@ objects:
             value: root
           - name: MYSQL_PASS
             value: bGUwsXEseTYfrsnk
-          image: docker-registry.default.svc:5000/${NAMESPACE}/phpmyadmin:stable
+          image: docker-registry.default.svc:5000/${NAMESPACE}/phpmyadmin:latest
           imagePullPolicy: Always
           name: phpmyadmin
           ports:
@@ -375,9 +375,9 @@ objects:
         - phpmyadmin
         from:
           kind: ImageStreamTag
-          name: phpmyadmin:stable
+          name: phpmyadmin:latest
           namespace: ${NAMESPACE}
-        lastTriggeredImage: docker-registry.default.svc:5000/${NAMESPACE}/phpmyadmin:stable
+        lastTriggeredImage: docker-registry.default.svc:5000/${NAMESPACE}/phpmyadmin:latest
       type: ImageChange
     - type: ConfigChange
 - apiVersion: build.openshift.io/v1
@@ -429,13 +429,13 @@ objects:
     output:
       to:
         kind: ImageStreamTag
-        name: phpmyadmin:stable
+        name: phpmyadmin:latest
     postCommit: {}
     resources: {}
     runPolicy: Serial
     source:
       git:
-        ref: STABLE
+        ref: LATEST
         uri: https://github.com/phpmyadmin/phpmyadmin.git
       type: Git
     strategy:
