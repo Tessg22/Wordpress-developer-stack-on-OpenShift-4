@@ -435,7 +435,7 @@ objects:
     runPolicy: Serial
     source:
       git:
-        ref: LATEST
+        ref: STABLE
         uri: https://github.com/phpmyadmin/phpmyadmin.git
       type: Git
     strategy:
